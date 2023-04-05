@@ -1,10 +1,14 @@
 # 372-Final Project
 Link to Final Map
 
+![Example usage of the map](https://github.com/thehellomartian/372-FinalProject/main/MapExample.jpg "Example usage of the map")
+
 Above is an example of what the map looks like. 
 
-
+![Initial Sketch](https://github.com/thehellomartian/372-FinalProject/main/372-initialsketch.jpg "Initial Sketch")
 Above is an example of what my initial sketch looked like.
+
+![Overpass Turbo Example](https://github.com/thehellomartian/372-FinalProject/main/372-dataExample.jpg "Overpass Turbo Example")
 
 Above is an example of my process of figuring out what the api link should contain for the OSM data. 
 

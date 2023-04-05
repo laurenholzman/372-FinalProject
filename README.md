@@ -1,5 +1,5 @@
 ## 372-Final Project
-Link to Final Map
+[Link to Final Map](https://thehellomartian.github.io/372-FinalProject/372final.html)
 
 ![Example usage of the map](https://github.com/thehellomartian/372-FinalProject/blob/3adc269eea1aa2347077a672859a714d1de2b5a6/MapExample.JPG "Example usage of the map")
 

@@ -1,0 +1,623 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Stores in Washington</title>
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.css' rel='stylesheet' />
+
+
+    <script src="https://cdn.jsdelivr.net/npm/osmtogeojson@3.0.0-beta.5/osmtogeojson.min.js"></script>
+    <script src='https://api.mapbox.com/mapbox.js/plugins/turf/v2.0.2/turf.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js" integrity="sha512-Q7HOppxoH0L2M7hreVoFCtUZimR2YaY0fBewIYzkCgmNtgOOZ5IgMNYxHgfps0qrO1ef5m7L1FeHrhXlq1I9HA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  
+
+
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
+    <style>
+
+
+        .search-container {
+            margin-top: 110px;
+            top: 1%;
+            margin-right: 30px;
+            
+            right: 0;
+            width: 300px;
+            height: 50px;
+            position: fixed;
+            font-family: sans-serif;
+            border-radius: 3px;
+            
+        }
+
+        input[type="text"] {
+            width: 200px;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px 0 0 5px;
+            border: 1px solid black;
+        }
+
+        button {
+            padding-top: 10px;
+            padding-bottom: 10px;
+            
+            font-size: 16px;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            background-color: #0074D9;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        #map {
+            position: relative;
+            z-index: 0;
+            width: 100%;
+            height: 98vh;
+            outline-color: black;
+            outline-width: 2px;
+            border: 2px solid black;
+        }
+        #radioBox {
+           
+            font-size: 12px;
+            padding: 10px;
+            bottom: 73%;
+            min-height: 3%;
+            margin-right: 40px;
+            right: 0;
+            width: 180px;
+            padding: 10px;
+            position: fixed;
+            background-color: #fff;
+            overflow-y: auto;
+            border-radius: 3px;
+        }
+        #infoBox {
+            margin-top: 20%;
+            bottom: 48.5%;
+            min-height: 17%;
+            margin-right: 40px;
+            right: 0;
+            width: 180px;
+            padding: 10px;
+            position: fixed;
+            background-color: #fff;
+            overflow-y: auto;
+            border-radius: 3px;
+        }
+
+
+        #statsBox {
+            margin-top: 20%;
+            bottom: 22%;
+            min-height: 18%;
+            margin-right: 40px;
+            right: 0;
+            width: 180px;
+            padding: 10px;
+            position: fixed;
+            background-color: #fff;
+            overflow-y: auto;
+            border-radius: 3px;
+        }
+       
+
+        #sourceInfo {
+            font-size: 11px;
+            margin-top: 120px;
+            bottom: 4%;
+            min-height: 10%;
+            margin-right: 40px;
+            right: 0;
+            width: 180px;
+            padding: 10px;
+            position: fixed;
+            background-color: #fff;
+            overflow-y: auto;
+            border-radius: 3px;
+        }
+        #radioBox,#infoBox, #sourceInfo, #statsBox {
+            font-family: sans-serif;
+            outline-color: black;
+            outline-width: 2px;
+            border-color: black;
+            border: 1px solid black;
+        }
+        #title {
+            position: absolute;
+            top: 1%;
+            left: 50%;
+            text-align: center;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            left: 50%;
+            margin-top: 50px;
+            font-family: sans-serif;
+            min-width:70%;
+            padding: 10px;
+            background-color: #fff;
+            min-height: 5%;
+            border-radius: 3px;
+            border: 2px solid black;
+           
+        }
+        .legend-key {
+            display: inline-block;
+            
+            border-radius: 20%;
+            width: 10px;
+            height: 10px;
+            margin-right: 5px;
+            padding: 2px;
+            opacity: 0.5
+        }
+
+        .legend-dot {
+            display: inline-block;
+            border-radius: 100%;
+            width: 10px;
+            height: 10px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div><div id="yo"></div><div id="radioBox">
+    <div>
+        <input type="radio" id="option1" name="options" value="option1" checked>
+        <label for="option1">Number of Stores</label>
+    </div>
+    <div>
+        <input type="radio" id="option2" name="options" value="option2">
+        <label for="option2">Number of Stores per 100,000 People</label>
+    </div>
+</div>
+    <div id="title">Distribution of Stores in Washington by County</div>
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Safeway">
+        <button id="search-button">Search</button>
+
+    </div><div id="statsBox">
+    <div id="shopsStats"> </div> 
+    </div>
+          <div id="sourceInfo"><p><b>Author:</b> Lauren Holzman </p><p><b> Date Published:</b> 04/04/2023 </p><p><b>Projection: </b>Globe (Mapbox) </p><p> <b>Classification Method: </b>Equal Interval (based on max of store type chosen)</div>
+
+
+
+    <script>
+        var useNum = true;
+        var heading = "Number of Stores"
+        var geojson;
+        var CurrentStore;
+        var CurrentCounty;
+        var max;
+        var min;
+        var zoomThreshold = 7.8;
+        var doIt = false;
+     
+        mapboxgl.accessToken = "pk.eyJ1IjoidGhlaGVsbG9tYXJ0aWFuIiwiYSI6ImNsMDc1NXBuazF6bXczZXJzd2ZseXB4MDgifQ.gQNA94PswehVHrpv6cBBSw"
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v11', // replace with your preferred map style
+            center: [-120.515257, 47.5],
+            zoom: 6.5 // replace with your preferred zoom level
+        });
+
+        // Load GeoJSON data
+        map.on('load', async function () {
+            map.addSource('my-data', {
+                type: 'geojson',
+                data: 'waCounties.geojson' // replace with your file path
+            });
+
+            // Add a layer showing the GeoJSON data
+            /*
+            map.addLayer({
+                id: 'my-layer',
+                type: 'fill',
+                source: 'my-data',
+                layout: {
+                    'visibility': 'visible'
+                },
+                paint: {
+                    'fill-color': '#f00',
+                    'fill-opacity': 0.3,
+                    'fill-outline-color': 'black',
+                    
+                }
+
+            });
+            */
+            map.addLayer({
+                'id': 'Outline',
+                'type': 'line',
+                'source': 'my-data',
+                'layout': {},
+                'paint': {
+                    'line-color': 'black',
+                    'line-width': 1
+                },
+            });
+
+            //info popup
+            new mapboxgl.Popup()
+                .setLngLat([-120.515257, 46.5])
+                .setHTML("</p> <b>Information:</b><br />Welcome to my GEOS 372 Final Project. This map is designed to allow users to explore locations of their favorite stores across the state of Washington. Safeway has been inputted as an example, though searching for a new store will update the map. Please note that spelling and capitalization must be correct or no stores will be displayed. For more information on naming specifics, google the store of interest along with the phrase Open Street Maps. You can click on a county to see statistics, zoom in to see the individual store locations, and use the toggle feature to see store counts normalized by population or not.</p>")
+                .addTo(map);
+            console.log("uhhh")
+
+            
+            //scale and north arrow
+
+            const scale = new mapboxgl.ScaleControl({
+                maxWidth: 200,
+                unit: 'imperial'
+            });
+            map.addControl(scale);
+
+            scale.setUnit('metric');
+
+            const nav = new mapboxgl.NavigationControl({
+                showCompass: true
+            });
+            map.addControl(nav, 'top-right');
+
+
+
+            // Storing response
+            const url = 'waCounties.geojson';
+            const response = await fetch(url);
+
+            // Storing data in form of JSON
+            var data = await response.json();
+            console.log(data, "response");
+            waZCTA = data;
+
+            var isStart = true;
+            var polyBbox = turf.bbox(waZCTA);
+            var searchInput = "Safeway"
+            getStores();
+            
+            
+
+            // Get the search input and button elements
+            
+            var searchButton = document.getElementById('search-button');
+
+            // Add a click event listener to the search button
+            searchButton.addEventListener('click', function () {
+                searchInput = document.getElementById("search-input");
+                isStart = false;
+                deleteStores();
+                getStores();
+                
+                // Get the search term from the input field
+               
+
+            });
+            
+          
+
+            function deleteStores() {
+                yo.innerHTML = ``
+                if (map.getSource("stores")) {
+
+                    map.removeLayer('stores');
+                    map.removeSource("stores");
+
+                }
+                if (map.getSource('polygons')) {
+
+                    map.removeLayer('polygons');
+                    map.removeSource('polygons');
+
+                }
+            }
+
+            function getStores() {
+                if (isStart) {
+                    console.log("yes")
+                    searchTerm = searchInput;
+                } else {
+                    console.log("no")
+                    var searchTerm = searchInput.value.trim();
+                }
+
+                var bounds = map.getBounds();
+
+                var link = `https://overpass-api.de/api/interpreter?data=[out:json];(node["brand"="` + searchTerm + `"](${polyBbox[1]},${polyBbox[0]},${polyBbox[3]},${polyBbox[2]});way["brand"="` + searchTerm + `"](${bounds._sw.lat},${bounds._sw.lng},${bounds._ne.lat},${bounds._ne.lng}););out%20center;>
+`;
+
+
+                
+                // Use the fetch API to retrieve the Overpass API data
+                fetch(link.concat(";"), { method: "GET" })
+                    .then(async function (response) {
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        // Create a GeoJSON object from the Overpass API data
+                        geojson = osmtogeojson(data);
+                        geojson = turf.pointsWithinPolygon(geojson, waZCTA);
+
+                        //create a turf multipoint layer for all the points within
+                        coords = [];
+                        for (i = 0; i < geojson.features.length; i++) {
+                            coords.push(geojson.features[i].geometry.coordinates)
+                        }
+                        shopPointsTurf = turf.multiPoint(coords);
+
+                        
+                        //get array for number of stores within polygon
+                        //look through all ZCTAs
+                        nums = [];
+                        numsProp = [];
+
+                        for (i = 0; i < waZCTA.features.length; i++) {
+                            
+                            //look through each polygon in the zip code TA
+                            
+                            
+                           
+                  
+                           
+                            var ptsWithin = turf.pointsWithinPolygon(shopPointsTurf, waZCTA.features[i]);
+                           
+                            if (ptsWithin.features.length > 0) {
+                                waZCTA.features[i].properties.num = ptsWithin.features[0].geometry.coordinates.length;
+                                waZCTA.features[i].properties.numProp = ptsWithin.features[0].geometry.coordinates.length/waZCTA.features[i].properties.population*100000
+                            } else {
+                                waZCTA.features[i].properties.num = 0;
+                                waZCTA.features[i].properties.numProp = 0;
+                            }
+                            //add toggle button to display prop symbol or normal, add update on toggle, it'd be nice to not have it calculate again but idk if I'm gonna do that lmao.
+                            //nums.push(waZCTA.features[i].properties.num);
+                            nums.push(waZCTA.features[i].properties.num);
+                            numsProp.push(waZCTA.features[i].properties.numProp);
+                            
+                        }
+                        if (useNum) {
+                            
+                            min = Math.min(...nums);
+                            max = Math.max(...nums);
+                            colorScheme = [
+                                'step',
+                                ['get', 'num'],
+                                'lightgray',
+                                0, 'lightgray',
+                                0.00001, '#f7bebe',
+                                max / 3, '#f7bebe',
+                                max / 3 + .001, '#f56464', 
+                                (2 * max) / 3, '#f56464',
+                                (2 * max) / 3 + .001, 'red'
+                            ];
+                        } else {
+                            min = Math.min(...numsProp);
+                            max = Math.max(...numsProp);
+                            colorScheme = [
+                                'step',
+                                ['get', 'numProp'],
+                                'lightgray',
+                                0, 'lightgray',
+                                0.00001, '#f7bebe',
+                                max / 3, '#f7bebe',
+                                max / 3 + .001, '#f56464', //green
+                                (2 * max) / 3, '#f56464',
+                                (2 * max) / 3 + .001, 'red'
+                            ];
+                        }
+
+                        
+                        //if (max > 2) {
+                            
+                        /*
+                        } else if (max == 2) {
+                            colorScheme = [
+                                'step',
+                                ['get', 'numProp'],
+                                'lightgray',
+                                0, 'lightgray',
+                                1, 'lightpink', //red
+                                2, 'red'
+                            ];
+                        } else {
+                            colorScheme = [
+                                'step',
+                                ['get', 'numProp'],
+                                'lightgray',
+                                0, 'lightgray',
+                                1, '#ff0000'
+                            ];
+                        }*/
+                        map.addSource('polygons', {
+
+                            type: 'geojson',
+                            data: waZCTA
+                        }
+                        );
+                        map.addLayer({
+                            id: 'polygons',
+                            type: 'fill',
+                            source: 'polygons',
+                            paint: {
+                                'fill-color': colorScheme,
+                                'fill-opacity': 0.5 // set fill opacity to 0.7
+                            }
+                        });
+
+                        // Add the GeoJSON object as a point layer to the map
+                        map.addSource('stores', {
+                            type: 'geojson',
+                            data: geojson
+                        });
+                        map.addLayer({
+                            id: 'stores',
+                            type: 'circle',
+                            source: 'stores',
+                            paint: {
+                                'circle-color': 'black',
+                                'circle-radius': 6
+                            },
+                            layout: {
+                                visibility: 'none'
+                            }
+                        });
+                        if (max > 0) {
+                            
+                            shopsStats.innerHTML = `<b><div style = "text-align: center" >${heading}</div></b><p><span class="legend-key" style="background-color: lightgray"></span> <span>  None</span></p>
+                                        <p><span class="legend-key" style="background-color: #f7bebe"></span> <span>  ${0.01}-${Math.round(max / 3 * 100) / 100}</span></p>
+                                        <p><span class="legend-key" style="background-color: #f56464"></span> <span>  ${Math.round(max / 3 * 100) / 100 + 0.01}-${Math.round((2 * max) / 3 * 100) / 100}</span></p>
+                                        <p><span class="legend-key" style="background-color: red"></span> <span>  ${Math.round((2 * max) / 3 * 100) / 100}-${Math.round(max * 100) / 100}</span></p>`
+
+                        } else {
+                            shopsStats.innerHTML = `<p><span class="legend-key" style="background-color: lightgray"> None</span> `
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                       
+
+                    });
+                console.log("yeet")
+                
+
+            }
+            
+            map.on('zoom', () => {
+                const currentZoom = map.getZoom();
+                const layer = map.getLayer('stores');
+
+                if (currentZoom >= zoomThreshold) {
+                    map.setLayoutProperty(layer.id, 'visibility', 'visible');
+                    if (max > 0) {
+                       
+                        shopsStats.innerHTML = `<b><div style = "text-align: center" >${heading}</div></b><p><span class="legend-key" style="background-color: lightgray"></span> <span>  None</span></p> 
+                                        <p><span class="legend-key" style="background-color: #f7bebe"></span><span>  ${0.01}-${Math.round(max / 3 * 100) / 100}</span></p>
+                                        <p><span class="legend-key" style="background-color: #f56464"></span><span>  ${Math.round(max / 3 * 100) / 100 + 0.01}-${Math.round((2 * max) / 3 * 100) / 100}</span></p>
+                                        <p><span class="legend-key" style="background-color: red"></span><span>  ${Math.round((2 * max) / 3 * 100) / 100}-${Math.round(max * 100) / 100}</span></p>
+                                        <p><span class="legend-dot" style = "background-color: black"></span><span> Store Location </span></p>`
+
+                    } else {
+                        shopsStats.innerHTML = `<p><span class="legend-key" style="background-color: lightgray"></span> <span>  None</span></p><p><span class="legend-dot" style = "background-color: black"></span><span> Store Location </span></p>`
+                    }
+                } else {
+                    
+                    map.setLayoutProperty(layer.id, 'visibility', 'none');
+                    if (max > 0) {
+                       
+                        shopsStats.innerHTML = `<b><div style = "text-align: center" >${heading}</div></b><p><span class="legend-key" style="background-color: lightgray"></span> <span>  None</span></p>
+                                        <p><span class="legend-key" style="background-color: #f7bebe"></span> <span>  ${0.01}-${Math.round(max / 3 * 100) / 100}</span></p>
+                                        <p><span class="legend-key" style="background-color: #f56464"></span> <span>  ${Math.round(max / 3 * 100) / 100 + 0.01}-${Math.round((2 * max) / 3 * 100) / 100}</span></p>
+                                        <p><span class="legend-key" style="background-color: red"></span> <span>  ${Math.round((2 * max) / 3 * 100) / 100}-${Math.round(max * 100) / 100}</span></p>`
+
+                    } else {
+                        shopsStats.innerHTML = `<p><span class="legend-key" style="background-color: lightgray"> None </span> `
+                    }
+                }
+                if (currentZoom + 1 < zoomThreshold) {
+                    
+                    yo.innerHTML = ``
+                   
+                   
+                }
+            });
+
+            // Create a popup object and add it to the map
+            var popup = new mapboxgl.Popup({
+                closeButton: true,
+                closeOnClick: true
+            });
+
+            // Change the cursor to a pointer when the mouse hovers over the polygons
+            map.on('mouseenter', 'polygons', function (e) {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            // Change the cursor back to the default when the mouse leaves the polygons
+            map.on('mouseleave', 'polygons', function (e) {
+                map.getCanvas().style.cursor = '';
+            });
+
+            // Display a popup when a polygon is clicked
+            map.on('click', 'polygons', function (e) {
+                
+                // Get the bounds of the clicked polygon
+                CurrentCounty = e.features[0];
+                const polygonBounds = turf.bbox(e.features[0]);
+
+              
+               
+                    new Promise(function (resolve, reject) {
+                        map.fitBounds(polygonBounds, { padding: 100 });
+                        doIt = true;
+                        resolve();
+                    }).then(function () {
+                        map.on('idle', function () {
+                            if (doIt) {
+
+                                yo.innerHTML = `<div id="infoBox"><b><div style = "text-align: center" >County Statistics</div></b>
+                            <p><b>County: </b> ${CurrentCounty.properties.COUNTY} </p><p><b> Population: </b> ${CurrentCounty.properties.population} </p><p><b>Number of Stores:   
+                            </b>${CurrentCounty.properties.num} </p><p> <b>Number of Stores per 100,000 people: </b>${Math.round(CurrentCounty.properties.numProp * 1000) / 1000} </div>`
+                                
+                                doIt = false;
+                            }
+                        });
+                        
+                    });
+            });
+
+            map.on('click', 'stores', function (e) { 
+                if (e.features[0].properties.shop) {
+                    var num = e.features[0].properties.shop;
+                } else if (e.features[0].properties.amenity) {
+                var num = e.features[0].properties.amenity;
+            } else {
+                var num = "Not Available";
+            }
+                
+                popup.setLngLat(e.lngLat)
+                    .setHTML('<h4>Shop: ' + num + '</h4>')
+                    .addTo(map);
+
+                currentStore = e.features[0];
+            });
+
+            var option1 = document.getElementById('option1');
+            var option2 = document.getElementById('option2');
+
+            option1.addEventListener('change', function () {
+                if (this.checked) {
+                    
+                    useNum = true;
+                    heading = "Number of Stores"
+                    deleteStores();
+                    getStores();
+                    // Code to execute when Option 1 is selected
+                }
+            });
+
+            option2.addEventListener('change', function () {
+                if (this.checked) {
+                    
+                    // Code to execute when Option 2 is selected
+                    useNum = false;
+                    heading = "Number of Stores per 100,000 People"
+                    deleteStores();
+                    getStores();
+                }
+            });
+            
+
+
+
+        });
+    </script>
+</body>
+</html>
+

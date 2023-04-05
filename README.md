@@ -5,7 +5,7 @@ Link to Final Map
 
 Above is an example of what the map looks like. 
 
-![Initial Sketch](https://github.com/thehellomartian/372-FinalProject/main/372-initialsketch.png "Initial Sketch")
+![Initial Sketch](https://github.com/thehellomartian/372-FinalProject/blob/884a11d2ac37c8713f958af1875680bf48a16fe2/372-initialsketch.png "Initial Sketch")
 Above is an example of what my initial sketch looked like.
 
 ![Overpass Turbo Example](https://github.com/thehellomartian/372-FinalProject/main/372-dataExample.JPG "Overpass Turbo Example")

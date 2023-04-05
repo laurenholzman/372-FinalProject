@@ -1,7 +1,7 @@
 # 372-Final Project
 Link to Final Map
 
-![Example usage of the map](https://github.com/thehellomartian/372-FinalProject/main/MapExample.JPG "Example usage of the map")
+![Example usage of the map](https://github.com/thehellomartian/372-FinalProject/blob/b6a02c0461075f8d4205d1732f768018893c9a32/372-dataExample.JPG "Example usage of the map")
 
 Above is an example of what the map looks like. 
 
